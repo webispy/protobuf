@@ -1,0 +1,26 @@
+Source: protobuf
+Section: libs
+Priority: optional
+Maintainer: Inho Oh <inho.oh@sk.com>
+Build-Depends: debhelper (>=9), dh-autoreconf,
+	autoconf,
+	automake,
+	libtool,
+	libssl-dev,
+	zlib1g-dev,
+	pkg-config
+Standards-Version: 3.9.6
+Homepage: http://www.protobuf.io/
+
+Package: libprotobuf
+Architecture: linux-any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: gRPC
+
+Package: libprotobuf-dev
+Architecture: linux-any
+Multi-Arch: same
+Depends: libprotobuf
+Description: gRPC (development files)
+

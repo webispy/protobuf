@@ -1,0 +1,41 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+DH_VERBOSE=1
+
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+
+CFLAGS := $(shell dpkg-buildflags --get CFLAGS)
+CFLAGS := $(filter-out -O2,$(CFLAGS))
+
+DEB_BUILD_OPTIONS += nocheck
+
+ifeq ($(origin CC),default)
+CC := $(DEB_HOST_GNU_TYPE)-gcc
+endif
+
+
+DESTDIR := $(CURDIR)/debian/tmp
+
+%:
+	dh $@ --parallel --with autoreconf
+
+override_dh_auto_configure:
+ifeq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+	@echo [Native build]
+	dh_auto_configure -- --disable-static
+else
+	@echo [Cross build - $(DEB_HOST_GNU_TYPE)]
+	dh_auto_configure -- --disable-static --host=$(DEB_HOST_GNU_TYPE)
+endif
+
+# Skip test
+override_dh_auto_test:
+
+override_dh_auto_install:
+	LD_LIBRARY_PATH=/usr/$(DEB_HOST_MULTIARCH)/lib dh_auto_install
+#	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(DESTDIR)/usr/lib/$(DEB_HOST_MULTIARCH):/usr/$(DEB_HOST_MULTIARCH)/lib dh_auto_install
+
+#override_dh_shlibdeps:
+#	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(DESTDIR)/usr/lib/$(DEB_HOST_MULTIARCH):/usr/$(DEB_HOST_MULTIARCH)/lib dh_shlibdeps --dpkg-shlibdeps-params="--ignore-missing-info"
